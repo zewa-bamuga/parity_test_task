@@ -1,5 +1,6 @@
 install:
-	poetry install
+	cd backend && \
+		poetry install
 
 run:
 	cp -f ./deploy/docker-compose.yml docker-compose.yml && \
