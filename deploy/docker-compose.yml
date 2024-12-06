@@ -1,0 +1,58 @@
+version: "3"
+
+services:
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: ./deploy/django.dockerfile
+    environment:
+      - DATABASE_URL=postgres://image_user:password@db:5432/image_db
+    volumes:
+      - ./backend:/app
+      - /app/media
+    depends_on:
+      - db
+    networks:
+      - app-network
+    restart: "unless-stopped"
+    ports:
+      - 8000:8000
+
+  frontend:
+    container_name: frontend
+    build:
+      context: .
+      dockerfile: ./deploy/vuejs.dockerfile
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: "unless-stopped"
+    ports:
+      - 5173:5173
+
+  db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: image_user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: image_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: "unless-stopped"
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
